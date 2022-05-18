@@ -1,0 +1,47 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+  web:
+    restart: always
+    build: ./web/
+#    ports:
+#      - "8000:8000"  
+    expose:
+      - "8000"
+    links:
+      - mongo:mongo
+      - redis:redis
+    volumes:
+      - web-django:/usr/src/app
+    environment:
+      MONGO_NAME: mongo
+      MONGO_USER: mongo
+      MONGO_PASSWORD: mongo
+    command: python manage.py runserver 0.0.0.0:8000
+
+  nginx:
+    restart: always
+    build: ./nginx/
+    ports:
+      - "80:80"
+    links:
+      - web:web
+
+
+  redis:
+    restart: always
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  web-django:
+  redisdata:
